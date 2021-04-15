@@ -1,0 +1,52 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Apr 15 10:00:15 2021
+
+@author: chase
+"""
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import tensorflow 
+import Lab4Functions as l4f
+import seaborn as sns
+from sklearn.preprocessing import OneHotEncoder 
+import scipy.signal as sps
+import numpy as np
+
+ 
+
+df = pd.read_csv('LabelledDataASH.csv')
+
+column_names = [
+    "x",
+    "y",
+    "z",
+    "t",
+    "activity"
+]
+
+time = df.t/1000
+
+sfreq = 1000/np.mean(np.diff(df.t))
+
+stepdata = df.loc[(df.activity == "Running")]
+
+
+
+stepdata_time = stepdata.t/1000
+
+low_pass = 3
+low_pass1 = low_pass/(sfreq/2)
+b2, a2 = sps.butter(4, low_pass1, btype='lowpass')
+xfilt = sps.filtfilt(b2, a2, stepdata.x)
+xfilt_peaks,_ = sps.find_peaks(xfilt)
+
+plt.figure()
+plt.plot(stepdata_time, xfilt)
+plt.plot(stepdata_time[xfilt_peaks], xfilt[xfilt_peaks], 'x', color = 'g',)
+plt.title('Jakob - Peaks of Filtered Data - X-Axis - Running')
+plt.ylabel('Acceleration (g)')
+plt.xlabel('Time (s)')
+
