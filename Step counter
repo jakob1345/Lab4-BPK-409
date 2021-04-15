@@ -1,0 +1,50 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Apr 14 22:39:12 2021
+
+@author: jakob
+"""
+"Libraries"
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import scipy.signal as sps
+
+"Variables"
+
+
+"Import Activity file"
+column_names = [
+    'x',
+    'y',
+    'z',
+    't',
+    'activity'
+    ]
+df = pd.read_csv('LabelledDataASH.csv')
+time= df.t/1000
+
+"isolate running"
+stepdata= df.loc[df.activity == "Running"]
+
+
+sfreq= 1000/np.mean(np.diff(df.t))
+
+"filter data"
+low_pass=3
+low_pass1= low_pass/(sfreq/2)
+b2, a2 =sps.butter(4, low_pass1, btype='lowpass')
+xfilt =sps.filtfilt(b2, a2, stepdata.x)
+yfilt =sps.filtfilt(b2, a2, stepdata.y)
+zfilt =sps.filtfilt(b2, a2, stepdata.z)
+
+
+xfilt_peaks,_ = sps.find_peaks(xfilt)
+stepdata_time = stepdata.t/1000
+
+plt.figure()
+plt.plot(stepdata_time,xfilt)
+plt.plot(stepdata_time[xfilt_peaks], xfilt[xfilt_peaks], "x", color='g')
+plt.title("Jakob- Peaks of Filtered Data- X-Axis-Running")
+plt.ylabel("Acceleration [g]")
+plt.xlabel("Time [s]")
